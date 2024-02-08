@@ -69,7 +69,7 @@ class JSONLoader(BaseLoader):
                     with self.file_path.open(encoding="utf-8") as f:
                         data:list = json.load(f)
                     for line in data:
-                            self._parse(line, docs)
+                            self._parse(json.dumps(line), docs)
             else:
                 raise ValueError(
                     "Expected the file to have a `.json` or `.jsonl` extension"

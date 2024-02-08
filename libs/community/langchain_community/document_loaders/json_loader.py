@@ -59,18 +59,31 @@ class JSONLoader(BaseLoader):
         """Load and return documents from the JSON file."""
         docs: List[Document] = []
         if self._json_lines:
-            with self.file_path.open(encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if line:
-                        self._parse(line, docs)
+            if self.file_path.suffix == ".jsonl":
+                with self.file_path.open(encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line:
+                            self._parse(line, docs)
+            elif self.file_path.suffix == ".json":
+                    with self.file_path.open(encoding="utf-8") as f:
+                        data:list = json.load(f)
+                    for line in data:
+                            self._parse(line, docs)
+            else:
+                raise ValueError(
+                    "Expected the file to have a `.json` or `.jsonl` extension"
+                )
+            
         else:
-            self._parse(self.file_path.read_text(encoding="utf-8"), docs)
+            self._parse(self.file_path.read_teaxt(encoding="utf-8"), docs)
+
         return docs
 
     def _parse(self, content: str, docs: List[Document]) -> None:
         """Convert given content to documents."""
         data = self._jq_schema.input(json.loads(content))
+        print("Data : ",list(data))
 
         # Perform some validation
         # This is not a perfect validation, but it should catch most cases
@@ -140,7 +153,7 @@ class JSONLoader(BaseLoader):
 
     def _validate_metadata_func(self, data: Any) -> None:
         """Check if the metadata_func output is valid"""
-
+        
         sample = data.first()
         if self._metadata_func is not None:
             sample_metadata = self._metadata_func(sample, {})
